@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>180IQ — เกมคำนวณเลข</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-elevated: #1a1a28;
+            --bg-input: #0f0f18;
+            --border: #2a2a40;
+            --border-hover: #3a3a60;
+            --text: #e8e8f0;
+            --text-dim: #8a8aa8;
+            --text-muted: #5a5a78;
+            --accent: #7c3aed;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(124, 58, 237, 0.3);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.2);
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+            --shadow-glow: 0 0 40px var(--accent-glow);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans Thai', 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%);
+            animation: meshPulse 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes meshPulse {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--accent-light);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0 32px;
+            position: relative;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1));
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-light);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 1rem;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 16px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card:hover::before { opacity: 1; }
+        .card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1));
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .mode-btn {
+            position: relative;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            color: var(--text);
+            font-family: inherit;
+            overflow: hidden;
+        }
+
+        .mode-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(124,58,237,0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.15);
+        }
+
+        .mode-btn:hover::after { opacity: 1; }
+
+        .mode-btn.active {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.06));
+            box-shadow: 0 0 30px rgba(124,58,237,0.15);
+        }
+
+        .mode-btn.active::after { opacity: 1; }
+
+        .mode-btn .mode-icon { font-size: 1.75rem; margin-bottom: 10px; display: block; }
+        .mode-btn .mode-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; display: block; }
+        .mode-btn .mode-desc { font-size: 0.75rem; color: var(--text-muted); display: block; }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .level-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text);
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .level-btn:hover { border-color: var(--border-hover); }
+
+        .level-btn.active {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.08));
+            color: var(--accent-light);
+            font-weight: 600;
+        }
+
+        .level-btn .lv-name { font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 2px; }
+        .level-btn .lv-ops { font-size: 0.65rem; color: var(--text-muted); display: block; }
+
+        .number-inputs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .num-field {
+            position: relative;
+            flex: 1;
+            min-width: 80px;
+            max-width: 120px;
+        }
+
+        .num-field input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 12px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .num-field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .num-field input::placeholder { color: var(--text-muted); font-weight: 400; }
+
+        .num-field .num-label {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 0 8px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .target-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .target-field {
+            position: relative;
+            width: 160px;
+        }
+
+        .target-field input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 16px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .target-field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .target-field .target-label {
+            position: absolute;
+            top: -8px;
+            left: 16px;
+            background: var(--bg-card);
+            padding: 0 8px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .target-hint { color: var(--text-muted); font-size: 0.8rem; }
+
+        .action-btn {
+            width: 100%;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.02em;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .action-btn:hover::before { left: 100%; }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124,58,237,0.4), var(--shadow-glow);
+        }
+
+        .action-btn:active { transform: translateY(0); }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .action-btn .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, var(--bg-card), rgba(124,58,237,0.05));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-top: 16px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card.perfect {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, var(--bg-card), rgba(16,185,129,0.05));
+        }
+
+        .result-card.near {
+            border-color: rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, var(--bg-card), rgba(245,158,11,0.05));
+        }
+
+        .result-card.fail { border-color: rgba(239, 68, 68, 0.3); }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .result-badge.perfect {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .result-badge.near {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .result-badge.fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .result-equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--text);
+            word-break: break-all;
+            padding: 16px;
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .result-equation .equals { color: var(--accent-light); font-weight: 700; }
+        .result-equation .result-val { color: var(--success); font-weight: 700; }
+        .result-equation .result-val.near-val { color: var(--warning); }
+        .result-equation .result-val.fail-val { color: var(--error); }
+
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .result-meta span { display: flex; align-items: center; gap: 6px; }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loading-overlay.show { opacity: 1; pointer-events: all; }
+
+        .loading-ring {
+            width: 56px;
+            height: 56px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { color: var(--text-dim); font-size: 0.9rem; }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .history-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .history-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            border-color: var(--border-hover);
+            transform: translateX(4px);
+        }
+
+        .history-item .hist-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-item .hist-mode {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-light);
+            background: rgba(124,58,237,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .history-item .hist-eq {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item .hist-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+            white-space: nowrap;
+        }
+
+        .hist-status.ok { background: rgba(16,185,129,0.15); color: var(--success); }
+        .hist-status.near { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .hist-status.fail { background: rgba(239,68,68,0.1); color: var(--error); }
+
+        .footer-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .footer-btn {
+            flex: 1;
+            padding: 14px 20px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .footer-btn:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card);
+        }
+
+        .footer-btn.primary {
+            background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.08));
+            border-color: rgba(124,58,237,0.3);
+            color: var(--accent-light);
+        }
+
+        .footer-btn.primary:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(124,58,237,0.15);
+        }
+
+        .kbd-hint {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .kbd-hint kbd {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin: 0 2px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        @media (max-width: 520px) {
+            .app { padding: 16px 12px 40px; }
+            .card { padding: 20px 16px; }
+            .level-grid { grid-template-columns: repeat(2, 1fr); }
+            .number-inputs { gap: 8px; }
+            .num-field { min-width: 70px; }
+            .num-field input { padding: 14px 8px; font-size: 1.1rem; }
+            .header { padding: 24px 0 20px; }
+            .header h1 { font-size: 1.8rem; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        ::selection {
+            background: rgba(124, 58, 237, 0.3);
+            color: #fff;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-mesh"></div>
+    <div class="bg-grid"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-ring"></div>
+        <div class="loading-text">กำลังคำนวณ<span class="loading-dots"></span></div>
+    </div>
+
+    <div class="app">
+        <header class="header">
+            <div class="logo-badge">Interactive Solver</div>
+            <h1>180IQ</h1>
+            <p>เกมคำนวณเลขที่ท้าทายที่สุด เลือกโหมด ใส่ตัวเลข แล้วให้ AI หาคำตอบให้คุณ</p>
+        </header>
+
+        <div class="card" id="modeCard">
+            <div class="card-title">
+                <span class="icon">🎯</span>
+                เลือกโหมด
+            </div>
+            <div class="mode-grid">
+                <button class="mode-btn" data-mode="1" onclick="selectMode(1)">
+                    <span class="mode-icon">🔢</span>
+                    <span class="mode-name">180IQ 4 ตัว</span>
+                    <span class="mode-desc">เลข 4 ตัว คำตอบ 2 หลัก</span>
+                </button>
+                <button class="mode-btn" data-mode="2" onclick="selectMode(2)">
+                    <span class="mode-icon">🔢</span>
+                    <span class="mode-name">180IQ 5 ตัว</span>
+                    <span class="mode-desc">เลข 5 ตัว คำตอบ 3 หลัก</span>
+                </button>
+                <button class="mode-btn" data-mode="3" onclick="selectMode(3)">
+                    <span class="mode-icon">🎴</span>
+                    <span class="mode-name">เกม 24</span>
+                    <span class="mode-desc">เลข 4 ตัว เป้าหมาย 24</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="card" id="levelCard" style="display:none;">
+            <div class="card-title">
+                <span class="icon">⚡</span>
+                ระดับความยาก
+            </div>
+            <div class="level-grid">
+                <button class="level-btn" data-level="0" onclick="selectLevel(0)">
+                    <span class="lv-name">Lv.B</span>
+                    <span class="lv-ops">+ − × ÷</span>
+                </button>
+                <button class="level-btn" data-level="1" onclick="selectLevel(1)">
+                    <span class="lv-name">Lv.1</span>
+                    <span class="lv-ops">+ ^ √</span>
+                </button>
+                <button class="level-btn" data-level="2" onclick="selectLevel(2)">
+                    <span class="lv-name">Lv.2</span>
+                    <span class="lv-ops">+ root</span>
+                </button>
+                <button class="level-btn" data-level="3" onclick="selectLevel(3)">
+                    <span class="lv-name">Lv.3</span>
+                    <span class="lv-ops">+ ! Σ</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="card" id="inputCard" style="display:none;">
+            <div class="card-title">
+                <span class="icon">✏️</span>
+                ใส่ตัวเลข
+            </div>
+            <div class="number-inputs" id="numberInputs"></div>
+            <div style="margin-top: 24px;">
+                <div class="target-row">
+                    <div class="target-field" id="targetField">
+                        <span class="target-label">คำตอบเป้าหมาย</span>
+                        <input type="number" id="targetInput" placeholder="0" value="24">
+                    </div>
+                    <span class="target-hint" id="targetHint">ใส่ตัวเลขที่ต้องการให้ได้</span>
+                </div>
+            </div>
+            <button class="action-btn" style="margin-top: 24px;" onclick="solve()" id="solveBtn">
+                <span class="btn-content">
+                    <span>🚀</span>
+                    <span>คำนวณหาคำตอบ</span>
+                </span>
+            </button>
+        </div>
+
+        <div id="resultArea"></div>
+
+        <div class="card" id="historyCard" style="display:none;">
+            <div class="card-title">
+                <span class="icon">📜</span>
+                ประวัติการคำนวณ
+            </div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div class="kbd-hint">
+            กด <kbd>Enter</kbd> เพื่อคำนวณ · <kbd>Tab</kbd> เพื่อเลื่อนไปช่องถัดไป
+        </div>
+    </div>
+
+    <script>
+
+        // ===================== STATE =====================
+        let state = {
+            mode: null,
+            level: null,
+            numCount: 4,
+            history: JSON.parse(localStorage.getItem('iq180_history') || '[]')
+        };
+
+        function $(id) { return document.getElementById(id); }
+        function show(el) { el.style.display = ''; }
+        function hide(el) { el.style.display = 'none'; }
+
+        function setActive(selector, value, attr) {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute(attr) == value);
+            });
+        }
+
+        // ===================== PARTICLES =====================
+        function createParticles() {
+            const container = $('particles');
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (8 + Math.random() * 12) + 's';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.width = (2 + Math.random() * 3) + 'px';
+                p.style.height = p.style.width;
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
+        // ===================== MODE SELECTION =====================
+        function selectMode(mode) {
+            state.mode = mode;
+            setActive('.mode-btn', mode, 'data-mode');
+
+            if (mode === 3) {
+                state.level = null;
+                state.numCount = 4;
+                hide($('levelCard'));
+                $('targetInput').value = '24';
+                $('targetInput').disabled = true;
+                $('targetHint').textContent = 'เป้าหมายคงที่: 24';
+            } else {
+                state.numCount = (mode === 2) ? 5 : 4;
+                show($('levelCard'));
+                if (state.level === null) selectLevel(0);
+                $('targetInput').disabled = false;
+                $('targetInput').value = '';
+                $('targetHint').textContent = 'ใส่ตัวเลขที่ต้องการให้ได้';
+            }
+
+            renderNumberInputs();
+            show($('inputCard'));
+            hide($('resultArea'));
+
+            setTimeout(() => {
+                const firstInput = document.querySelector('.num-field input');
+                if (firstInput) firstInput.focus();
+            }, 100);
+        }
+
+        function selectLevel(lv) {
+            state.level = lv;
+            setActive('.level-btn', lv, 'data-level');
+        }
+
+        // ===================== NUMBER INPUTS =====================
+        function renderNumberInputs() {
+            const container = $('numberInputs');
+            container.innerHTML = '';
+            for (let i = 0; i < state.numCount; i++) {
+                const div = document.createElement('div');
+                div.className = 'num-field';
+                div.innerHTML = `
+                    <span class="num-label">เลข ${i + 1}</span>
+                    <input type="number" id="num${i}" placeholder="0" step="any">
+                `;
+                container.appendChild(div);
+            }
+
+            const inputs = container.querySelectorAll('input');
+            inputs.forEach((input, idx) => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (idx < inputs.length - 1) {
+                            inputs[idx + 1].focus();
+                        } else if (state.mode !== 3) {
+                            $('targetInput').focus();
+                        } else {
+                            solve();
+                        }
+                    }
+                });
+            });
+
+            $('targetInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') solve();
+            });
+        }
+
+        // ===================== SOLVE =====================
+        function solve() {
+            const inputs = document.querySelectorAll('.num-field input');
+            const numbers = [];
+            for (const input of inputs) {
+                const val = parseFloat(input.value);
+                if (isNaN(val)) {
+                    shake(input);
+                    return;
+                }
+                numbers.push(val);
+            }
+
+            let target = 24;
+            if (state.mode !== 3) {
+                target = parseFloat($('targetInput').value);
+                if (isNaN(target)) {
+                    shake($('targetInput'));
+                    return;
+                }
+            }
+
+            $('loadingOverlay').classList.add('show');
+            $('solveBtn').disabled = true;
+
+            setTimeout(() => {
+                try {
+                    let result;
+                    if (state.mode === 3) {
+                        result = solveGame24(numbers);
+                    } else {
+                        result = solveIQ(numbers, target, state.level);
+                    }
+                    displayResult(result, numbers, target);
+                    addToHistory(result, numbers, target);
+                } catch (e) {
+                    console.error(e);
+                    displayResult({ error: true }, numbers, target);
+                } finally {
+                    $('loadingOverlay').classList.remove('show');
+                    $('solveBtn').disabled = false;
+                }
+            }, 50);
+        }
+
+        function shake(el) {
+            el.style.animation = 'none';
+            el.offsetHeight;
+            el.style.animation = 'shake 0.4s ease';
+            setTimeout(() => el.style.animation = '', 400);
+        }
+
+        // ===================== DISPLAY RESULT =====================
+        function displayResult(result, numbers, target) {
+            const area = $('resultArea');
+            if (result.error) {
+                area.innerHTML = `
+                    <div class="result-card fail">
+                        <div class="result-badge fail">❌ เกิดข้อผิดพลาด</div>
+                        <div class="result-equation">ไม่สามารถคำนวณได้ กรุณาลองใหม่</div>
+                    </div>
+                `;
+                show(area);
+                return;
+            }
+
+            const isPerfect = Math.abs(result.val - target) < 1e-6;
+            const isNear = !isPerfect && result.found;
+            const statusClass = isPerfect ? 'perfect' : (isNear ? 'near' : 'fail');
+            const badgeText = isPerfect ? '🎉 เป๊ะ 100%!' : (isNear ? '⚠️ ใกล้เคียงที่สุด' : '❌ ไม่พบสมการ');
+            const valClass = isPerfect ? '' : (isNear ? 'near-val' : 'fail-val');
+
+            let html = `<div class="result-card ${statusClass}">`;
+            html += `<div class="result-badge ${statusClass}">${badgeText}</div>`;
+
+            if (result.found) {
+                html += `<div class="result-equation">${escapeHtml(result.expr)} <span class="equals">=</span> <span class="result-val ${valClass}">${formatNumber(result.val)}</span></div>`;
+            } else {
+                html += `<div class="result-equation">ไม่พบสมการใดที่เป็นไปได้จากตัวเลข [${numbers.map(formatNumber).join(', ')}]</div>`;
+            }
+
+            html += `<div class="result-meta">`;
+            html += `<span>⏱️ ${result.time} ms</span>`;
+            html += `<span>🔢 ${numbers.map(formatNumber).join(' · ')}</span>`;
+            html += `<span>🎯 ${formatNumber(target)}</span>`;
+            if (result.timeout) html += `<span>⏳ ตัดจบก่อน Limit</span>`;
+            html += `</div></div>`;
+
+            html += `<div class="footer-actions">`;
+            html += `<button class="footer-btn primary" onclick="resetInputs()"><span>🔄</span> ใส่เลขชุดใหม่</button>`;
+            html += `<button class="footer-btn" onclick="changeMode()"><span>⚙️</span> เปลี่ยนโหมด</button>`;
+            html += `</div>`;
+
+            area.innerHTML = html;
+            show(area);
+            area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatNumber(n) {
+            if (Math.abs(n - Math.round(n)) < 1e-9) return Math.round(n).toString();
+            return parseFloat(n.toFixed(6)).toString();
+        }
+
+        function resetInputs() {
+            document.querySelectorAll('.num-field input').forEach(i => i.value = '');
+            if (state.mode !== 3) $('targetInput').value = '';
+            hide($('resultArea'));
+            const firstInput = document.querySelector('.num-field input');
+            if (firstInput) firstInput.focus();
+        }
+
+        function changeMode() {
+            state.mode = null;
+            state.level = null;
+            hide($('levelCard'));
+            hide($('inputCard'));
+            hide($('resultArea'));
+            setActive('.mode-btn', '', 'data-mode');
+            setActive('.level-btn', '', 'data-level');
+        }
+
+        // ===================== HISTORY =====================
+        function addToHistory(result, numbers, target) {
+            const entry = {
+                mode: state.mode,
+                level: state.level,
+                numbers: numbers,
+                target: target,
+                expr: result.expr,
+                val: result.val,
+                found: result.found,
+                time: result.time,
+                timestamp: Date.now()
+            };
+            state.history.unshift(entry);
+            if (state.history.length > 20) state.history.pop();
+            localStorage.setItem('iq180_history', JSON.stringify(state.history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = $('historyList');
+            if (state.history.length === 0) {
+                hide($('historyCard'));
+                return;
+            }
+            show($('historyCard'));
+
+            list.innerHTML = state.history.slice(0, 10).map(h => {
+                const modeName = h.mode === 3 ? '24' : (h.mode === 2 ? '5N' : '4N');
+                const isOk = h.found && Math.abs(h.val - h.target) < 1e-6;
+                const isNear = h.found && !isOk;
+                const statusClass = isOk ? 'ok' : (isNear ? 'near' : 'fail');
+                const statusText = isOk ? '✓' : (isNear ? '~' : '✗');
+                const eqText = h.found ? h.expr + ' = ' + formatNumber(h.val) : 'ไม่พบคำตอบ';
+
+                return `<div class="history-item" onclick="loadHistory(${h.timestamp})">
+                    <div class="hist-left">
+                        <span class="hist-mode">${modeName}${h.level !== null ? ' Lv.' + h.level : ''}</span>
+                        <span class="hist-eq">${escapeHtml(eqText)}</span>
+                    </div>
+                    <span class="hist-status ${statusClass}">${statusText}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function loadHistory(timestamp) {
+            const h = state.history.find(x => x.timestamp === timestamp);
+            if (!h) return;
+            selectMode(h.mode);
+            if (h.level !== null) selectLevel(h.level);
+            const inputs = document.querySelectorAll('.num-field input');
+            h.numbers.forEach((n, i) => { if (inputs[i]) inputs[i].value = n; });
+            if (h.mode !== 3) $('targetInput').value = h.target;
+            displayResult({ expr: h.expr, val: h.val, found: h.found, time: h.time }, h.numbers, h.target);
+        }
+
+        renderHistory();
+
+        // ===================== GAME 24 SOLVER =====================
+        function solveGame24(nums) {
+            const start = performance.now();
+            let best = null;
+            let found = false;
+
+            function getPrec(op) {
+                if (!op) return 3;
+                if (op === '*' || op === '/') return 2;
+                if (op === '+' || op === '-') return 1;
+                return 0;
+            }
+
+            function buildExpr(left, right, op) {
+                let l = left.expr;
+                if (getPrec(left.op) < getPrec(op)) l = '(' + l + ')';
+                let r = right.expr;
+                if (getPrec(right.op) < getPrec(op) ||
+                    (getPrec(right.op) === getPrec(op) && (op === '-' || op === '/'))) {
+                    r = '(' + r + ')';
+                }
+                return l + ' ' + op + ' ' + r;
+            }
+
+            function isBetter(a, b) {
+                const da = Math.abs(a.val - 24);
+                const db = Math.abs(b.val - 24);
+                if (Math.abs(da - db) > 1e-7) return da < db;
+                const pa = (a.expr.match(/\(/g) || []).length;
+                const pb = (b.expr.match(/\(/g) || []).length;
+                if (pa !== pb) return pa < pb;
+                if (a.cost !== b.cost) return a.cost < b.cost;
+                return a.expr.length < b.expr.length;
+            }
+
+            function solve(nodes) {
+                if (nodes.length === 1) {
+                    if (!found || isBetter(nodes[0], best)) {
+                        best = nodes[0];
+                        found = true;
+                    }
+                    return;
+                }
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const next = [];
+                        for (let k = 0; k < nodes.length; k++) {
+                            if (k !== i && k !== j) next.push(nodes[k]);
+                        }
+                        const a = nodes[i], b = nodes[j];
+
+                        next.push({ val: a.val + b.val, expr: buildExpr(a, b, '+'), op: '+', cost: a.cost + b.cost + 1 });
+                        solve(next);
+                        next.pop();
+
+                        next.push({ val: a.val * b.val, expr: buildExpr(a, b, '*'), op: '*', cost: a.cost + b.cost + 2 });
+                        solve(next);
+                        next.pop();
+
+                        const upper = a.val >= b.val ? a : b;
+                        const lower = a.val >= b.val ? b : a;
+                        next.push({ val: upper.val - lower.val, expr: buildExpr(upper, lower, '-'), op: '-', cost: a.cost + b.cost + 3 });
+                        solve(next);
+                        next.pop();
+
+                        if (Math.abs(b.val) > 1e-7) {
+                            next.push({ val: a.val / b.val, expr: buildExpr(a, b, '/'), op: '/', cost: a.cost + b.cost + 4 });
+                            solve(next);
+                            next.pop();
+                        }
+                        if (Math.abs(a.val) > 1e-7 && Math.abs(a.val - b.val) > 1e-7) {
+                            next.push({ val: b.val / a.val, expr: buildExpr(b, a, '/'), op: '/', cost: a.cost + b.cost + 4 });
+                            solve(next);
+                            next.pop();
+                        }
+                    }
+                }
+            }
+
+            const initial = nums.map(n => {
+                let expr;
+                if (n === Math.round(n)) expr = Math.round(n).toString();
+                else {
+                    expr = n.toString();
+                    expr = expr.replace(/0+$/, '');
+                    if (expr.endsWith('.')) expr = expr.slice(0, -1);
+                }
+                return { val: n, expr, op: null, cost: 0 };
+            });
+
+            solve(initial);
+
+            const time = Math.round(performance.now() - start);
+            return {
+                expr: best ? best.expr : '',
+                val: best ? best.val : 0,
+                found: found && Math.abs(best.val - 24) < 1e-6,
+                time: time,
+                timeout: false
+            };
+        }
+
+        // ===================== 180IQ SOLVER =====================
+        function solveIQ(nums, target, level) {
+            const start = performance.now();
+            const TIMEOUT = 4500;
+            let timeoutTriggered = false;
+
+            const numCount = nums.length;
+            const totalMasks = 1 << numCount;
+            const dp = Array.from({ length: totalMasks }, () => new Map());
+
+            for (let i = 0; i < numCount; i++) {
+                const n = Math.round(nums[i]);
+                dp[1 << i].set(n, {
+                    val: n, expr: n.toString(), op: null, cost: 0, sqrtDepth: 0, hasSigma: false
+                });
+            }
+
+            function getPrec(op) {
+                if (!op || op === 's' || op === 'r' || op === '!' || op === 'S') return 4;
+                if (op === '^') return 3;
+                if (op === '*' || op === '/') return 2;
+                if (op === '+' || op === '-') return 1;
+                return 0;
+            }
+
+            function buildExpr(left, right, op) {
+                let l = left.expr;
+                if (getPrec(left.op) < getPrec(op)) l = '(' + l + ')';
+                if (op === '^' && left.op === '^') l = '(' + l + ')';
+                let r = right.expr;
+                if (getPrec(right.op) < getPrec(op) ||
+                    (getPrec(right.op) === getPrec(op) && (op === '-' || op === '/' || op === '^'))) {
+                    r = '(' + r + ')';
+                }
+                return l + ' ' + op + ' ' + r;
+            }
+
+            function safePow(base, exp) {
+                if (exp < 0) return { overflow: true };
+                if (exp === 0) return { val: 1 };
+                if (base === 0) return { val: 0 };
+                if (base === 1) return { val: 1 };
+                let res = 1;
+                const absBase = Math.abs(base);
+                for (let i = 0; i < exp; i++) {
+                    if (res > Number.MAX_SAFE_INTEGER / absBase) return { overflow: true };
+                    res *= base;
+                }
+                return { val: res };
+            }
+
+            function safeFact(n) {
+                if (n < 0 || n > 20) return { overflow: true };
+                let res = 1;
+                for (let i = 1; i <= n; i++) {
+                    if (res > Number.MAX_SAFE_INTEGER / i) return { overflow: true };
+                    res *= i;
+                }
+                return { val: res };
+            }
+
+            function isBetterInt(a, b) {
+                const pa = (a.expr.match(/\(/g) || []).length;
+                const pb = (b.expr.match(/\(/g) || []).length;
+                if (pa !== pb) return pa < pb;
+                if (a.cost !== b.cost) return a.cost < b.cost;
+                return a.expr.length < b.expr.length;
+            }
+
+            function formatSigma(a, b, inner) {
+                return 'Σ(I=' + a + '→' + b + ')[' + inner + ']';
+            }
+
+            function addToDp(mask, node) {
+                const existing = dp[mask].get(node.val);
+                if (!existing || isBetterInt(node, existing)) {
+                    dp[mask].set(node.val, node);
+                }
+            }
+
+            function runSigma2(mask, n1, n2) {
+                if (n1.hasSigma || n2.hasSigma) return;
+                const a = n1.val, b = n2.val;
+                if (b - a > 1000 || b - a < 1) return;
+
+                const addNode = (sum, inner, extraCost) => {
+                    const sn = {
+                        val: sum,
+                        expr: formatSigma(n1.expr, n2.expr, inner),
+                        op: 'S',
+                        cost: n1.cost + n2.cost + extraCost,
+                        sqrtDepth: 0,
+                        hasSigma: true
+                    };
+                    addToDp(mask, sn);
+                };
+
+                let sumI = 0, sum2I = 0, sumI2 = 0, sumI3 = 0, sumFact = 0, sumFactI = 0;
+                let obI = false, ob2I = false, obI2 = false, obI3 = false, obFact = false, obFactI = false;
+
+                for (let I = a; I <= b; I++) {
+                    if (!obI) {
+                        if (sumI > Number.MAX_SAFE_INTEGER - I) obI = true;
+                        else sumI += I;
+                    }
+                    if (!ob2I) {
+                        const v = I * 2;
+                        if (sum2I > Number.MAX_SAFE_INTEGER - v) ob2I = true;
+                        else sum2I += v;
+                    }
+                    if (!obI2) {
+                        if (Math.abs(I) > Math.sqrt(Number.MAX_SAFE_INTEGER)) obI2 = true;
+                        else {
+                            const v = I * I;
+                            if (sumI2 > Number.MAX_SAFE_INTEGER - v) obI2 = true;
+                            else sumI2 += v;
+                        }
+                    }
+                    if (!obI3) {
+                        const v = I * I * I;
+                        if (sumI3 > Number.MAX_SAFE_INTEGER - v) obI3 = true;
+                        else sumI3 += v;
+                    }
+                    const f = safeFact(I);
+                    if (f.overflow) { obFact = true; obFactI = true; }
+                    else {
+                        if (!obFact) {
+                            if (sumFact > Number.MAX_SAFE_INTEGER - f.val) obFact = true;
+                            else sumFact += f.val;
+                        }
+                        if (!obFactI) {
+                            const v = f.val + I;
+                            if (sumFactI > Number.MAX_SAFE_INTEGER - v) obFactI = true;
+                            else sumFactI += v;
+                        }
+                    }
+                }
+
+                if (!obI) addNode(sumI, 'I', 8);
+                if (!ob2I) addNode(sum2I, 'I+I', 8);
+                if (!obI2) addNode(sumI2, 'I*I', 8);
+                if (!obI3) addNode(sumI3, 'I^3', 9);
+                if (!(a <= 0 && b >= 0)) addNode(b - a + 1, 'I/I', 8);
+                if (!obFact && a >= 0 && b <= 20) addNode(sumFact, 'I!', 9);
+                if (!obFactI && a >= 0 && b <= 20) addNode(sumFactI, 'I!+I', 9);
+            }
+
+            function runSigma3(mask, n1, n2, n3) {
+                if (n1.hasSigma || n2.hasSigma || n3.hasSigma) return;
+                const a = n1.val, b = n2.val, c = n3.val;
+                if (b - a > 1000 || b - a < 1) return;
+
+                const addNode = (sum, inner) => {
+                    const sn = {
+                        val: sum,
+                        expr: formatSigma(n1.expr, n2.expr, inner),
+                        op: 'S',
+                        cost: n1.cost + n2.cost + n3.cost + 10,
+                        sqrtDepth: 0,
+                        hasSigma: true
+                    };
+                    addToDp(mask, sn);
+                };
+
+                let sIc = 0, sI2c = 0, scI = 0, scPowI = 0, sIpowC = 0, scPowII = 0, sIpowCI = 0, sFactC = 0, sFactCI = 0;
+                let obIc = false, obI2c = false, obcI = false, obcPowI = false, obIpowC = false, obcPowII = false, obIpowCI = false, obFactC = false, obFactCI = false;
+
+                for (let I = a; I <= b; I++) {
+                    if (!obIc) {
+                        const v = I + c;
+                        if (sIc > Number.MAX_SAFE_INTEGER - v) obIc = true;
+                        else sIc += v;
+                    }
+                    if (!obI2c) {
+                        const v = I * I + c;
+                        if (sI2c > Number.MAX_SAFE_INTEGER - v) obI2c = true;
+                        else sI2c += v;
+                    }
+                    if (!obcI) {
+                        const v = c * I;
+                        if (scI > Number.MAX_SAFE_INTEGER - v) obcI = true;
+                        else scI += v;
+                    }
+
+                    const p1 = safePow(c, I);
+                    const p2 = safePow(I, c);
+                    const f = safeFact(I);
+
+                    if (p1.overflow) { obcPowI = true; obcPowII = true; }
+                    else {
+                        if (!obcPowI) {
+                            if (scPowI > Number.MAX_SAFE_INTEGER - p1.val) obcPowI = true;
+                            else scPowI += p1.val;
+                        }
+                        if (!obcPowII) {
+                            const v = p1.val + I;
+                            if (scPowII > Number.MAX_SAFE_INTEGER - v) obcPowII = true;
+                            else scPowII += v;
+                        }
+                    }
+
+                    if (p2.overflow) { obIpowC = true; obIpowCI = true; }
+                    else {
+                        if (!obIpowC) {
+                            if (sIpowC > Number.MAX_SAFE_INTEGER - p2.val) obIpowC = true;
+                            else sIpowC += p2.val;
+                        }
+                        if (!obIpowCI) {
+                            const v = p2.val + I;
+                            if (sIpowCI > Number.MAX_SAFE_INTEGER - v) obIpowCI = true;
+                            else sIpowCI += v;
+                        }
+                    }
+
+                    if (f.overflow) { obFactC = true; obFactCI = true; }
+                    else {
+                        if (!obFactC) {
+                            const v = f.val + c;
+                            if (sFactC > Number.MAX_SAFE_INTEGER - v) obFactC = true;
+                            else sFactC += v;
+                        }
+                        if (!obFactCI) {
+                            const v = f.val + c * I;
+                            if (sFactCI > Number.MAX_SAFE_INTEGER - v) obFactCI = true;
+                            else sFactCI += v;
+                        }
+                    }
+                }
+
+                if (!obIc) addNode(sIc, 'I+' + n3.expr);
+                if (!obI2c) addNode(sI2c, 'I*I+' + n3.expr);
+                if (!obcI) addNode(scI, n3.expr + '*I');
+                if (!obcPowI) addNode(scPowI, n3.expr + '^I');
+                if (!obIpowC) addNode(sIpowC, 'I^' + n3.expr);
+                if (!obcPowII) addNode(scPowII, n3.expr + '^I+I');
+                if (!obIpowCI) addNode(sIpowCI, 'I^' + n3.expr + '+I');
+                if (!obFactC && a >= 0 && b <= 20) addNode(sFactC, 'I!+' + n3.expr);
+                if (!obFactCI && a >= 0 && b <= 20) addNode(sFactCI, 'I!+' + n3.expr + '*I');
+            }
+
+            // Main DP loop
+            for (let mask = 1; mask < totalMasks; mask++) {
+                if (performance.now() - start > TIMEOUT) {
+                    timeoutTriggered = true;
+                    break;
+                }
+
+                for (let sub1 = 1; sub1 < mask; sub1++) {
+                    if ((sub1 & mask) !== sub1) continue;
+                    const sub2 = mask ^ sub1;
+                    if (sub1 >= sub2) continue;
+
+                    const dp1 = Array.from(dp[sub1].values());
+                    const dp2 = Array.from(dp[sub2].values());
+
+                    for (const n1 of dp1) {
+                        for (const n2 of dp2) {
+                            const passSigma = n1.hasSigma || n2.hasSigma;
+
+                            // Add
+                            addToDp(mask, {
+                                val: n1.val + n2.val,
+                                expr: buildExpr(n1, n2, '+'),
+                                op: '+',
+                                cost: n1.cost + n2.cost + 1,
+                                sqrtDepth: 0,
+                                hasSigma: passSigma
+                            });
+
+                            // Mul
+                            if (n1.val === 0 || Math.abs(n2.val) <= Number.MAX_SAFE_INTEGER / Math.abs(n1.val)) {
+                                addToDp(mask, {
+                                    val: n1.val * n2.val,
+                                    expr: buildExpr(n1, n2, '*'),
+                                    op: '*',
+                                    cost: n1.cost + n2.cost + 2,
+                                    sqrtDepth: 0,
+                                    hasSigma: passSigma
+                                });
+                            }
+
+                            // Sub
+                            if (n1.val >= n2.val) {
+                                addToDp(mask, {
+                                    val: n1.val - n2.val,
+                                    expr: buildExpr(n1, n2, '-'),
+                                    op: '-',
+                                    cost: n1.cost + n2.cost + 3,
+                                    sqrtDepth: 0,
+                                    hasSigma: passSigma
+                                });
+                            }
+                            if (n2.val >= n1.val) {
+                                addToDp(mask, {
+                                    val: n2.val - n1.val,
+                                    expr: buildExpr(n2, n1, '-'),
+                                    op: '-',
+                                    cost: n1.cost + n2.cost + 3,
+                                    sqrtDepth: 0,
+                                    hasSigma: passSigma
+                                });
+                            }
+
+                            // Div
+                            if (n2.val !== 0 && n1.val % n2.val === 0) {
+                                addToDp(mask, {
+                                    val: Math.floor(n1.val / n2.val),
+                                    expr: buildExpr(n1, n2, '/'),
+                                    op: '/',
+                                    cost: n1.cost + n2.cost + 4,
+                                    sqrtDepth: 0,
+                                    hasSigma: passSigma
+                                });
+                            }
+                            if (n1.val !== 0 && n2.val % n1.val === 0) {
+                                addToDp(mask, {
+                                    val: Math.floor(n2.val / n1.val),
+                                    expr: buildExpr(n2, n1, '/'),
+                                    op: '/',
+                                    cost: n1.cost + n2.cost + 4,
+                                    sqrtDepth: 0,
+                                    hasSigma: passSigma
+                                });
+                            }
+
+                            // Power (lv >= 1)
+                            if (level >= 1) {
+                                if (n2.val >= 0 && n2.val <= 10) {
+                                    const pw = safePow(n1.val, n2.val);
+                                    if (!pw.overflow) {
+                                        addToDp(mask, {
+                                            val: pw.val,
+                                            expr: buildExpr(n1, n2, '^'),
+                                            op: '^',
+                                            cost: n1.cost + n2.cost + 6,
+                                            sqrtDepth: 0,
+                                            hasSigma: passSigma
+                                        });
+                                    }
+                                }
+                                if (n1.val >= 0 && n1.val <= 10) {
+                                    const pw = safePow(n2.val, n1.val);
+                                    if (!pw.overflow) {
+                                        addToDp(mask, {
+                                            val: pw.val,
+                                            expr: buildExpr(n2, n1, '^'),
+                                            op: '^',
+                                            cost: n1.cost + n2.cost + 6,
+                                            sqrtDepth: 0,
+                                            hasSigma: passSigma
+                                        });
+                                    }
+                                }
+                            }
+
+                            // Root (lv >= 2)
+                            if (level >= 2) {
+                                if (n1.val >= 2 && n1.val <= 9 && n2.val >= 0) {
+                                    const r = Math.round(Math.pow(n2.val, 1.0 / n1.val));
+                                    const pw = safePow(r, n1.val);
+                                    if (!pw.overflow && pw.val === n2.val) {
+                                        addToDp(mask, {
+                                            val: r,
+                                            expr: 'root(' + n1.expr + ', ' + n2.expr + ')',
+                                            op: 'r',
+                                            cost: n1.cost + n2.cost + 7,
+                                            sqrtDepth: 0,
+                                            hasSigma: passSigma
+                                        });
+                                    }
+                                }
+                                if (n2.val >= 2 && n2.val <= 9 && n1.val >= 0) {
+                                    const r = Math.round(Math.pow(n1.val, 1.0 / n2.val));
+                                    const pw = safePow(r, n2.val);
+                                    if (!pw.overflow && pw.val === n1.val) {
+                                        addToDp(mask, {
+                                            val: r,
+                                            expr: 'root(' + n2.expr + ', ' + n1.expr + ')',
+                                            op: 'r',
+                                            cost: n1.cost + n2.cost + 7,
+                                            sqrtDepth: 0,
+                                            hasSigma: passSigma
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Sigma 2-node (lv >= 3)
+                    if (level >= 3) {
+                        for (const n1 of dp1) {
+                            for (const n2 of dp2) {
+                                if (n1.val < n2.val) runSigma2(mask, n1, n2);
+                                if (n2.val < n1.val) runSigma2(mask, n2, n1);
+                            }
+                        }
+                    }
+                }
+
+                // Sigma 3-node (lv >= 3)
+                if (level >= 3) {
+                    for (let sub1 = 1; sub1 < mask; sub1++) {
+                        if ((sub1 & mask) !== sub1) continue;
+                        const remaining = mask ^ sub1;
+                        for (let sub2 = 1; sub2 < remaining; sub2++) {
+                            if ((sub2 & remaining) !== sub2) continue;
+                            const sub3 = remaining ^ sub2;
+                            if (sub3 === 0) continue;
+                            const dp1 = Array.from(dp[sub1].values());
+                            const dp2 = Array.from(dp[sub2].values());
+                            const dp3 = Array.from(dp[sub3].values());
+                            for (const n1 of dp1) {
+                                for (const n2 of dp2) {
+                                    if (n1.val < n2.val) {
+                                        for (const n3 of dp3) {
+                                            runSigma3(mask, n1, n2, n3);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Unary operators
+                let changed = true;
+                while (changed) {
+                    changed = false;
+                    const unaryCandidates = [];
+                    for (const n of dp[mask].values()) {
+                        if (level >= 1 && n.sqrtDepth < 2 && n.val >= 2) {
+                            const r = Math.round(Math.sqrt(n.val));
+                            if (r * r === n.val) {
+                                unaryCandidates.push({
+                                    val: r,
+                                    expr: 'sqrt(' + n.expr + ')',
+                                    op: 's',
+                                    cost: n.cost + 5,
+                                    sqrtDepth: n.sqrtDepth + 1,
+                                    hasSigma: n.hasSigma
+                                });
+                            }
+                        }
+                        if (level >= 3 && n.val >= 0 && n.val <= 12) {
+                            const f = safeFact(n.val);
+                            if (!f.overflow) {
+                                unaryCandidates.push({
+                                    val: f.val,
+                                    expr: '(' + n.expr + ')!',
+                                    op: '!',
+                                    cost: n.cost + 5,
+                                    sqrtDepth: 0,
+                                    hasSigma: n.hasSigma
+                                });
+                            }
+                        }
+                    }
+                    for (const un of unaryCandidates) {
+                        const existing = dp[mask].get(un.val);
+                        if (!existing || isBetterInt(un, existing)) {
+                            dp[mask].set(un.val, un);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+
+            const finalMask = totalMasks - 1;
+            const foundAny = dp[finalMask].size > 0;
+            let bestSol = null;
+            let first = true;
+
+            if (foundAny) {
+                for (const current of dp[finalMask].values()) {
+                    if (first) { bestSol = current; first = false; }
+                    else {
+                        const diffCurr = Math.abs(current.val - target);
+                        const diffBest = Math.abs(bestSol.val - target);
+                        if (diffCurr !== diffBest) {
+                            if (diffCurr < diffBest) bestSol = current;
+                        } else if (isBetterInt(current, bestSol)) {
+                            bestSol = current;
+                        }
+                    }
+                }
+            }
+
+            const time = Math.round(performance.now() - start);
+            return {
+                expr: bestSol ? bestSol.expr : '',
+                val: bestSol ? bestSol.val : 0,
+                found: foundAny,
+                time: time,
+                timeout: timeoutTriggered
+            };
+        }
+    </script>
+</body>
+</html>
